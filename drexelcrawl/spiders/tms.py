@@ -2,7 +2,7 @@
 import scrapy
 from scrapy import Request
 import re
-import DragonPlan.items as models
+import drexelcrawl.items as models
 
 class TermSpider(scrapy.Spider):
     name = "tms"

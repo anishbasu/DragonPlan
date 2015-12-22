@@ -11,15 +11,15 @@
 
 BOT_NAME = 'DragonPlan'
 
-SPIDER_MODULES = ['DragonPlan.spiders']
-NEWSPIDER_MODULE = 'DragonPlan.spiders'
+SPIDER_MODULES = ['drexelcrawl.spiders']
+NEWSPIDER_MODULE = 'drexelcrawl.spiders'
 
 MONGODB_SERVER = "localhost"
 MONGODB_PORT = 27017
 MONGODB_DB = "DrexelTMS"
 MONGODB_COLLECTION = "courses"
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'DragonPlan (+http://www.yourdomain.com)'
+#USER_AGENT = 'drexelcrawl (+http://www.yourdomain.com)'
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS=32
@@ -47,13 +47,13 @@ MONGODB_COLLECTION = "courses"
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'DragonPlan.middlewares.MyCustomSpiderMiddleware': 543,
+#    'drexelcrawl.middlewares.MyCustomSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'DragonPlan.middlewares.MyCustomDownloaderMiddleware': 543,
+#    'drexelcrawl.middlewares.MyCustomDownloaderMiddleware': 543,
 #}
 
 # Enable or disable extensions
@@ -65,7 +65,7 @@ MONGODB_COLLECTION = "courses"
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'DragonPlan.pipelines.MongoPipeLine': 300,
+    'drexelcrawl.pipelines.MongoPipeLine': 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
