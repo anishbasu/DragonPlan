@@ -27,6 +27,7 @@ class CourseDescriptionItem(Item):
     course_code = Field()
     subject = Field()
     subject_id = Field()
+    number = Field()
     college = Field()
     department = Field()
     title = Field()

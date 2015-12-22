@@ -14,8 +14,10 @@ class TermSpider(scrapy.Spider):
     crawledCourses = []
     order = []
     def parse(self, response):
+        #Grab the Term Data
         terms = response.xpath('//div[@class="term"]/a')
         for term in terms:
+            #Extract the term data
             name = term.xpath('text()').extract()[0]
             url = term.xpath('@href').extract()[0]
             attr = re.search(r'(\w+) (\w+) (\d{2})-(\d{2})',name)
@@ -23,6 +25,7 @@ class TermSpider(scrapy.Spider):
             resultTerm['term_id'] = resultTerm['season'][:2]+resultTerm['yearBegin']+resultTerm['term_type'][0][0]
 
             if url not in self.crawledURLs:
+                #Crawl the terms URL to get the college listings
                 self.crawledURLs.append(url)
                 request = Request("https://"+self.allowed_domains[0]+url,self.parse_colleges)
                 courseInfo = models.CourseInfoItem(term_id=resultTerm['term_id'])
@@ -33,6 +36,7 @@ class TermSpider(scrapy.Spider):
             yield resultTerm
 
     def parse_colleges(self, response):
+        #Perform the Subject URL Crawl
         if response.meta['first'] == False:
             subjects = response.xpath('//div[@class="odd"]/a')+response.xpath('//div[@class="even"]/a')
             for subject in subjects:
@@ -46,8 +50,7 @@ class TermSpider(scrapy.Spider):
                     request = Request("https://"+self.allowed_domains[0]+url,callback=self.parse_courses)
                     request.meta['general'] = courseInfo
                     yield request
-
-
+        #Only the function call from parse() will perform the sidebar crawl
         else:
             colleges = response.xpath('//div[@id="sideLeft"]/a')
             for college in colleges:
@@ -62,21 +65,22 @@ class TermSpider(scrapy.Spider):
                     request.meta['general'] = courseInfo
                     yield request
 
-
+    #Parsing the course listings in the course listings
     def parse_courses(self,response):
         gen_info = response.meta['general']
-        courses = response.xpath('//tr[@class="odd"]') + response.xpath('//tr[@class="even"]')
+        courses = response.xpath('//tr[@class="odd"]|//tr[@class="even"]')
         for course in courses:
             info = course.xpath('./td[@valign]')
             if len(info) is not 0:
-                info_txt = info.xpath('text()').extract()
+                info_txt = [''.join(i.xpath('./text()').extract()) for i in info]
                 course_item = models.CourseItem(subject_id=info_txt[0],
                                         number=info_txt[1],
                                         instr_type=info_txt[2],
                                         instr_method=info_txt[3],
                                         sec=info_txt[4],
-                                        instr=info_txt[6],
+                                        instr=info_txt[7],
                                         term_id=gen_info['term_id'])
+
                 course_item['course_code'] = course_item['subject_id']+course_item['number']
                 crn = info.xpath('./p/a')[0]
                 course_item['crn'] = crn.xpath('text()').extract()[0]
@@ -89,9 +93,10 @@ class TermSpider(scrapy.Spider):
                 if course_item['course_code'] not in self.crawledCourses:
                     course_desc = models.CourseDescriptionItem(course_code = course_item['course_code'],
                                                               subject = gen_info['subject'],
+                                                               number = course_item['number'],
                                                               college = gen_info['college'],
                                                                subject_id = info_txt[0],
-                                                            title=info_txt[5]
+                                                            title=info_txt[6]
                                                               )
                     self.crawledCourses.append(course_item['course_code'])
 
@@ -118,8 +123,9 @@ class TermSpider(scrapy.Spider):
             course_desc['credits'] = points[0]
             course_desc['department'] = points[2]
             course_desc['restrictions']= self.parseRestrictions(response)
-            course_desc['co_req'] = points[3]
-            course_desc['pre_req'] = points[4]
+            reqs = desc_rows.xpath('./div[contains(.,"Requisites:")]')
+            course_desc['co_req'] = ''.join(reqs[0].xpath('.//text()').extract()[1:]).strip()
+            course_desc['pre_req'] = ''.join(reqs[1].xpath('.//text()').extract()[1:]).strip()
             course_desc['repeat'] = points[5]
             yield course_desc
 
